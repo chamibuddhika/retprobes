@@ -57,11 +57,12 @@ void ProfHandler(int sig, siginfo_t *siginfo, void *context) {
   printf("RSP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RSP]);
   printf("RBP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RBP]);
   void** ra = getRA(reinterpret_cast<const ucontext_t*>(context));
+  printf("[Handler] Current RA is : %p\n", *ra); 
   if (!ra) {
     printf("Error obtaining the return address..\n");
   }
 
-  printf("Return address is : %p\n", *ra);
+  // printf("Return address is : %p\n", *ra);
   __ret_setCurrentRA(*ra);
   *reinterpret_cast<void (**)(void)>(ra) = &__ret_FunctionExit;
 }

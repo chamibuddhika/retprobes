@@ -3,16 +3,15 @@
 #include <unistd.h>
 #include <pthread.h>
 
+int fac(int n);
+
 void* run(void* tid) {
   int count = 10;
   while(1) {
-    if (!count) {
-      return NULL;
-    }
+    fac(10);
     int x=0;
     int y = x+2;
-    sleep(1);
-    count--;
+    // sleep(1);
   }
 }
 
@@ -42,12 +41,6 @@ void create_n_join_threads(int n_threads) {
 int fac(int n)
 {
   if ( n == 0 ) {
-    printf("BAR\n");
-    while(true) {
-      asm(".byte 0x61");
-      return 1;
-    }
-
     return 1;
   } else {
     return n*fac(n-1);
