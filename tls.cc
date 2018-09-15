@@ -15,7 +15,7 @@ extern "C" {
 
 void* __ret_getCurrentRA();
 void __ret_printCurrentRA(void**);
-void __ret_setCurrentRA(void*);
+int __ret_setCurrentRA(void*);
 
 #ifdef __cplusplus
 }
@@ -26,9 +26,10 @@ void* __ret_getCurrentRA() {
 }
 
 void __ret_printCurrentRA(void** ra) {
-  printf("Current RA is : %p\n", *((uint64_t**)ra));
+  printf("Current RA is : %p\n", currentRA);
 }
 
-void __ret_setCurrentRA(void* ra) {
+int __ret_setCurrentRA(void* ra) {
   currentRA = reinterpret_cast<uint64_t*>(ra);
+  return 0;
 }

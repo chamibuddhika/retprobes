@@ -8,6 +8,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <atomic>
+
+extern "C" {
+  extern void __ret_FunctionExit();
+  extern int __ret_setCurrentRA(void* ra);
+}
+
 extern void InitThread();
 
 typedef int (*pthread_create_type)(pthread_t *__restrict __newthread,
@@ -17,6 +24,8 @@ typedef int (*pthread_create_type)(pthread_t *__restrict __newthread,
 
 static pthread_create_type original_pthread_create;
 
+void* trampoline_fn;
+
 static __attribute__((constructor))
 void __constructor() {
   original_pthread_create = (pthread_create_type)(intptr_t)dlsym(RTLD_NEXT, "pthread_create");
@@ -24,6 +33,8 @@ void __constructor() {
     fprintf(stderr, "failed to locate original pthread_create: %s\n", dlerror());
     abort();
   }
+
+  trampoline_fn = (void*) &__ret_FunctionExit;
 
   // Initialzes the main thread
   // InitThread();

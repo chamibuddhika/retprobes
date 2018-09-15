@@ -14,9 +14,11 @@
 
 #include "getra.h"
 
+#include <atomic>
+
 extern "C" {
   extern void __ret_FunctionExit();
-  extern void __ret_setCurrentRA(void* ra);
+  extern int __ret_setCurrentRA(void* ra);
 }
 
 void CreateTimer() {
@@ -62,9 +64,26 @@ void ProfHandler(int sig, siginfo_t *siginfo, void *context) {
     printf("Error obtaining the return address..\n");
   }
 
-  // printf("Return address is : %p\n", *ra);
-  __ret_setCurrentRA(*ra);
-  *reinterpret_cast<void (**)(void)>(ra) = &__ret_FunctionExit;
+
+  /*
+  sigset_t block;
+  sigemptyset (&block);
+  sigaddset (&block, SIGPROF);
+  sigprocmask (SIG_BLOCK, &block, NULL);
+  */
+
+  if (*ra != &__ret_FunctionExit) {
+    int res = __ret_setCurrentRA(*ra);
+    if (res) {
+      printf("Invalid return address on stack..\n");
+    }
+    *reinterpret_cast<void (**)(void)>(ra) = &__ret_FunctionExit;
+  } else {
+    printf("Stack frame already instrumented..\n");
+  }
+
+  /* Disable the signal handler. */
+  signal(sig, SIG_IGN);
 }
 
 

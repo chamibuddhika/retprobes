@@ -90,18 +90,30 @@ ASM_SYMBOL(__ret_FunctionExit):
 	// Save the important registers first. Since we're assuming that this
 	// function is only jumped into, we only preserve the registers for
 	// returning.
-	subq	$56, %rsp
+	subq	$64, %rsp
 	// CFI_DEF_CFA_OFFSET(64)
 	movq  %rbp, 48(%rsp)
 	movupd	%xmm0, 32(%rsp)
 	movupd	%xmm1, 16(%rsp)
 	movq	%rax, 8(%rsp)
 	movq	%rdx, 0(%rsp)
-  callq  __ret_getCurrentRA@PLT
-	// movq	$42, %(rax)
-  movq  %rax, %rdi
-  xor   %rsi,%rsi
+  callq  ASM_SYMBOL(__ret_getCurrentRA@PLT)
+  movq  (%rax), %rax
+  movq %rax, 56(%rsp)
+  // xor   %rsi,%rsi
   callq __ret_printCurrentRA@PLT
+  
+  // Fix up the next frame
+  // Save next return address in the TL
+	movq  48(%rsp), %rbp
+  movq 8(%rbp), %rdi
+  callq ASM_SYMBOL(__ret_setCurrentRA@PLT)
+  testq %rax, %rax 
+  jne .Ltmp
+  // Overwrite trampoline as the return address of the frame above
+  movq ASM_SYMBOL(trampoline_fn@GOTPCREL)(%rip), %rax
+  movq (%rax), %rax
+  mov %rax, 8(%rbp)
 
 .Ltmp:
 	// Restore the important registers.
