@@ -13,6 +13,7 @@
 extern "C" {
   extern void __ret_FunctionExit();
   extern int __ret_setCurrentRA(void* ra);
+  extern void log_time(void* addr);
 }
 
 extern void InitThread();
@@ -25,6 +26,7 @@ typedef int (*pthread_create_type)(pthread_t *__restrict __newthread,
 static pthread_create_type original_pthread_create;
 
 void* trampoline_fn;
+void* instrumentation_fn;
 
 static __attribute__((constructor))
 void __constructor() {
@@ -35,6 +37,7 @@ void __constructor() {
   }
 
   trampoline_fn = (void*) &__ret_FunctionExit;
+  instrumentation_fn = (void*) &log_time;
 
   // Initialzes the main thread
   // InitThread();

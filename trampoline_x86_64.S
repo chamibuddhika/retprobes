@@ -75,6 +75,19 @@
 #endif
 	.file "trampoline_x86.S"
 
+.macro ALIGNED_CALL_RAX
+  // Call the logging handler, after aligning the stack to a 16-byte boundary.
+  // The approach we're taking here uses additional stack space to stash the
+  // stack pointer twice before aligning the pointer to 16-bytes. If the stack
+  // was 8-byte aligned, it will become 16-byte aligned -- when restoring the
+  // pointer, we can always look -8 bytes from the current position to get
+  // either of the values we've stashed in the first place.
+  pushq %rsp
+  pushq (%rsp)
+  andq $-0x10, %rsp
+  callq *%rax
+  movq 8(%rsp), %rsp
+.endm
 
 //===----------------------------------------------------------------------===//
 
@@ -114,6 +127,17 @@ ASM_SYMBOL(__ret_FunctionExit):
   movq ASM_SYMBOL(trampoline_fn@GOTPCREL)(%rip), %rax
   movq (%rax), %rax
   mov %rax, 8(%rbp)
+  
+  // Call instrumentation function
+  movq ASM_SYMBOL(instrumentation_fn@GOTPCREL)(%rip), %rax
+  movq (%rax), %rax
+  testq %rax, %rax 
+  je .Ltmp
+
+  // Return address of this frame is saved at 56(%rsp)
+  // Set it as an argument to the instrumentation function
+	movq  56(%rsp), %rdi
+  ALIGNED_CALL_RAX
 
 .Ltmp:
 	// Restore the important registers.

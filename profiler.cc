@@ -19,6 +19,10 @@
 extern "C" {
   extern void __ret_FunctionExit();
   extern int __ret_setCurrentRA(void* ra);
+
+  void log_time(void* addr) {
+    printf("Logging ..\n");
+  }
 }
 
 void CreateTimer() {
