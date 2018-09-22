@@ -16,7 +16,7 @@ extern "C" {
   extern void log_time(void* addr);
 }
 
-extern void InitThread();
+extern void initThread();
 
 typedef int (*pthread_create_type)(pthread_t *__restrict __newthread,
              const pthread_attr_t *__restrict __attr,
@@ -43,16 +43,16 @@ void __constructor() {
   // InitThread();
 }
 
-struct trampoline_data {
+struct WrapperData {
   void *(*original_fn)(void *);
   void *original_arg;
 };
 
-static void *trampoline(void *_arg) {
-  struct trampoline_data data = *(struct trampoline_data *)_arg;
-  free(_arg);
+static void *wrapper(void *arg) {
+  struct WrapperData data = *(struct WrapperData *)arg;
+  free(arg);
   // fprintf(stderr, "Activating profiler for newly created thread %p\n", (void *)pthread_self());
-  InitThread();
+  initThread();
   return data.original_fn(data.original_arg);
 }
 
@@ -65,16 +65,16 @@ int pthread_create(pthread_t *__restrict thread,
                       void *(*fn) (void *),
                       void *__restrict arg) {
   printf("In create\n");
-  struct trampoline_data *data;
+  struct WrapperData *data;
 
-  data = (struct trampoline_data*) malloc(sizeof(struct trampoline_data));
+  data = (struct WrapperData*) malloc(sizeof(struct WrapperData));
   if (!data) {
     return ENOMEM;
   }
   data->original_fn = fn;
   data->original_arg = arg;
 
-  int rv = original_pthread_create(thread, attr, trampoline, data);
+  int rv = original_pthread_create(thread, attr, wrapper, data);
   if (rv)
     free(data);
   return rv;
@@ -83,4 +83,3 @@ int pthread_create(pthread_t *__restrict thread,
 #ifdef __cplusplus 
 } 
 #endif 
-

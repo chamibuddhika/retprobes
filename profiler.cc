@@ -25,7 +25,7 @@ extern "C" {
   }
 }
 
-void CreateTimer() {
+void createTimer() {
 
   int rv;
   struct sigevent sevp;
@@ -54,16 +54,16 @@ void CreateTimer() {
 
 }
 
-void ProfHandler(int sig, siginfo_t *siginfo, void *context) {
+void profHandler(int sig, siginfo_t *siginfo, void *context) {
   printf ("Sending PID: %ld, UID: %ld\n",
      (long)siginfo->si_pid, (long)siginfo->si_uid);
-  printf("Inside profiler handler\n"); 
+  // printf("Inside profiler handler\n"); 
   ucontext_t* sigctx = reinterpret_cast<ucontext_t*>(context);
-  printf("RIP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RIP]);
-  printf("RSP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RSP]);
-  printf("RBP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RBP]);
+  // printf("RIP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RIP]);
+  // printf("RSP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RSP]);
+  // printf("RBP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RBP]);
   void** ra = getRA(reinterpret_cast<const ucontext_t*>(context));
-  printf("[Handler] Current RA is : %p\n", *ra); 
+  // printf("[Handler] Current RA is : %p\n", *ra); 
   if (!ra) {
     printf("Error obtaining the return address..\n");
   }
@@ -87,28 +87,25 @@ void ProfHandler(int sig, siginfo_t *siginfo, void *context) {
   }
 
   /* Disable the signal handler. */
-  signal(sig, SIG_IGN);
+  // signal(sig, SIG_IGN);
 }
 
 
-void SetupProfHandler() {
+void setupProfHandler() {
   struct sigaction sa;
 
-  /* Install timer_handler as the signal handler for SIGVTALRM. */
   memset (&sa, 0, sizeof (sa));
-  /* Use the sa_sigaction field because the handles has two additional parameters */
-  sa.sa_sigaction = &ProfHandler;
+  sa.sa_sigaction = &profHandler;
 
-  /* The SA_SIGINFO flag tells sigaction() to use the sa_sigaction field, not sa_handler. */
   sa.sa_flags = SA_SIGINFO;
   if (sigaction(SIGPROF, &sa, NULL) < 0) {
     perror ("sigaction");
   }
 }
 
-void InitThread() {
-  SetupProfHandler();
-  CreateTimer();
+void initThread() {
+  setupProfHandler();
+  createTimer();
 }
 
 /*

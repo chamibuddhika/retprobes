@@ -14,8 +14,8 @@ extern "C" {
 #endif
 
 void* __ret_getCurrentRA();
-void __ret_printCurrentRA(void**);
 int __ret_setCurrentRA(void*);
+void __ret_printCurrentRA(void**);
 
 #ifdef __cplusplus
 }
