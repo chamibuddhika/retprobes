@@ -10,10 +10,11 @@
 
 #include <atomic>
 
+#include "log_handler.h"
+
 extern "C" {
   extern void __ret_FunctionExit();
   extern int __ret_setCurrentRA(void* ra);
-  extern void log_time(void* addr);
 }
 
 extern void initThread();
@@ -37,7 +38,7 @@ void __constructor() {
   }
 
   trampoline_fn = (void*) &__ret_FunctionExit;
-  instrumentation_fn = (void*) &log_time;
+  instrumentation_fn = (void*) &log_return;
 
   // Initialzes the main thread
   // InitThread();

@@ -1,6 +1,5 @@
 
 #include <stdio.h>
-
 #include <cstdint>
 
 #if defined(__x86_64__)

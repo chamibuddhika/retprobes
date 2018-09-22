@@ -19,10 +19,6 @@
 extern "C" {
   extern void __ret_FunctionExit();
   extern int __ret_setCurrentRA(void* ra);
-
-  void log_time(void* addr) {
-    printf("Logging ..\n");
-  }
 }
 
 void createTimer() {
@@ -55,8 +51,8 @@ void createTimer() {
 }
 
 void profHandler(int sig, siginfo_t *siginfo, void *context) {
-  printf ("Sending PID: %ld, UID: %ld\n",
-     (long)siginfo->si_pid, (long)siginfo->si_uid);
+  // printf ("Sending PID: %ld, UID: %ld\n",
+  //    (long)siginfo->si_pid, (long)siginfo->si_uid);
   // printf("Inside profiler handler\n"); 
   ucontext_t* sigctx = reinterpret_cast<ucontext_t*>(context);
   // printf("RIP : %p\n", (char*) sigctx->uc_mcontext.gregs[REG_RIP]);
@@ -65,7 +61,7 @@ void profHandler(int sig, siginfo_t *siginfo, void *context) {
   void** ra = getRA(reinterpret_cast<const ucontext_t*>(context));
   // printf("[Handler] Current RA is : %p\n", *ra); 
   if (!ra) {
-    printf("Error obtaining the return address..\n");
+    fprintf(stderr, "Error obtaining the return address..\n");
   }
 
 
@@ -79,11 +75,11 @@ void profHandler(int sig, siginfo_t *siginfo, void *context) {
   if (*ra != &__ret_FunctionExit) {
     int res = __ret_setCurrentRA(*ra);
     if (res) {
-      printf("Invalid return address on stack..\n");
+      fprintf(stderr, "Invalid return address on stack..\n");
     }
     *reinterpret_cast<void (**)(void)>(ra) = &__ret_FunctionExit;
   } else {
-    printf("Stack frame already instrumented..\n");
+    // fprintf(stderr, "Stack frame already instrumented..\n");
   }
 
   /* Disable the signal handler. */

@@ -97,7 +97,6 @@
 	.globl ASM_SYMBOL(__ret_FunctionExit)
 	.align 16, 0x90
 	ASM_TYPE_FUNCTION(__ret_FunctionExit)
-# LLVM-MCA-BEGIN __xray_FunctionExit
 ASM_SYMBOL(__ret_FunctionExit):
 	// CFI_STARTPROC
 	// Save the important registers first. Since we're assuming that this
@@ -114,7 +113,7 @@ ASM_SYMBOL(__ret_FunctionExit):
   movq  (%rax), %rax
   movq %rax, 56(%rsp)
   // xor   %rsi,%rsi
-  callq __ret_printCurrentRA@PLT
+  // callq __ret_printCurrentRA@PLT
   
   // Fix up the next frame
   // Save next return address in the TL
@@ -149,6 +148,5 @@ ASM_SYMBOL(__ret_FunctionExit):
 	addq	$56, %rsp
 	// CFI_DEF_CFA_OFFSET(8)
 	retq
-# LLVM-MCA-END
 	ASM_SIZE(__ret_FunctionExit)
 	// CFI_ENDPROC

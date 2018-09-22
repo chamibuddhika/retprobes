@@ -49,6 +49,6 @@ int fac(int n)
 
 int main() {
   printf("In main..\n");
-  create_n_join_threads(1);
+  create_n_join_threads(10);
   // fac(10);
 }
